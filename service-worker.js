@@ -1,39 +1,42 @@
-const CACHE_NAME = 'jm-ultra-v2'; // Incremento de versão força atualização
-const ASSETS = [
+const CACHE_NAME = 'fluxpro-system-v5'; // Versão do cache
+const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
-  './pedro1.png',
-  './pedro2.png',
-  './icon-192.png'
+  './logo.png'
 ];
 
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+// 1. Instalação: Baixa os arquivos para o cache
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+    .then((cache) => {
+      return cache.addAll(ASSETS_TO_CACHE);
+    })
   );
-  self.skipWaiting(); // Força o SW novo a assumir imediatamente
 });
 
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
+// 2. Ativação: Limpa caches antigos se você atualizar a versão
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
     caches.keys().then((keyList) => {
       return Promise.all(keyList.map((key) => {
         if (key !== CACHE_NAME) {
-          return caches.delete(key); // Limpa cache antigo
+          return caches.delete(key);
         }
       }));
     })
   );
 });
 
-self.addEventListener('fetch', (e) => {
-  e.respondWith(
-    caches.match(e.request).then((res) => {
-      return res || fetch(e.request).catch(() => {
-        // Fallback opcional se falhar rede e cache (ex: página offline customizada)
-        // return caches.match('./offline.html');
-      });
+// 3. Interceptação: Serve os arquivos offline quando não tem internet
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+    .then((response) => {
+      // Se achou no cache, retorna do cache (Offline)
+      // Se não, tenta buscar na internet (Online)
+      return response || fetch(event.request);
     })
   );
 });
