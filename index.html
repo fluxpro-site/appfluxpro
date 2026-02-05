@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>Sistema Financeiro</title>
+    
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-SEU-CODIGO-AQUI"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-SEU-CODIGO-AQUI'); 
+    </script>
+
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="logo.png">
+
+    <style>
+        :root {
+            /* --- VARIAVEIS --- */
+            --bg-body: #f8f9fa;
+            --surface-solid: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --gold-start: #d4af37; --gold-end: #b48811;
+            --gold-gradient: linear-gradient(135deg, var(--gold-start), var(--gold-end));
+            --success: #27ae60; --success-bg: #eafaf1;
+            --danger: #c0392b; --danger-bg: #fadbd8;
+            --info: #2980b9; --info-bg: #ebf5fb;
+            --radius-xl: 24px; --radius-lg: 16px;
+            --shadow-soft: 0 8px 30px rgba(0,0,0,0.04);
+            --nav-height: 80px;
+            --border-color: #f0f0f0;
+            --input-bg: #f4f6f8;
+            --header-bg: rgba(255,255,255,0.8);
+        }
+
+        [data-theme="dark"] {
+            --bg-body: #050505;
+            --surface-solid: #18181b;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            --success-bg: #0f291e;
+            --danger-bg: #33100e;
+            --info-bg: #0e1f2b;
+            --shadow-soft: 0 8px 30px rgba(0,0,0,0.5);
+            --border-color: #27272a;
+            --input-bg: #27272a;
+            --header-bg: rgba(24, 24, 27, 0.85);
+        }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-primary); margin: 0; padding-bottom: calc(var(--nav-height) + 40px); overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- TELA DE LOGIN --- */
+        #tela-login {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #111; z-index: 999999;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            padding: 20px; text-align: center;
+        }
+        .login-box { width: 100%; max-width: 320px; animation: fadeIn 0.5s; display:flex; flex-direction:column; align-items:center; }
+        
+        .login-input {
+            width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #333;
+            background: #222; color: white; margin-bottom: 15px; font-size: 1rem; text-align: center;
+            outline: none; transition: 0.3s;
+        }
+        .login-input:focus { border-color: #d4af37; }
+        .login-btn {
+            width: 100%; padding: 15px; border-radius: 12px; border: none;
+            background: linear-gradient(135deg, #d4af37, #b48811); color: white;
+            font-weight: 800; text-transform: uppercase; cursor: pointer; letter-spacing: 1px;
+        }
+
+        /* --- RESTANTE DO CSS --- */
+        #notificacao-fixa { position: fixed; top: 80px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 450px; background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 12px 20px; border-radius: 50px; box-shadow: 0 10px 25px rgba(192, 57, 43, 0.4); z-index: 9000; display: none; align-items: center; justify-content: space-between; animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #notificacao-fixa strong { font-size: 0.95rem; display: block; } #notificacao-fixa small { color: #ffdad9; font-size: 0.8rem; }
+        body.privacy-active .valor, body.privacy-active .item-valor, body.privacy-active .text-green, body.privacy-active .text-red, body.privacy-active .text-primary { filter: blur(8px); cursor: pointer; user-select: none; }
+        #overlay-fechamento { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--surface-solid); z-index: 13000; display: none; flex-direction: column; justify-content: center; align-items: center; padding: 40px; text-align: center; }
+        .spinner-biblia { width: 50px; height: 50px; border: 5px solid rgba(212, 175, 55, 0.2); border-top-color: var(--gold-end); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 30px; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .texto-fechamento { font-size: 1.2rem; font-weight: bold; color: var(--text-primary); margin-bottom: 10px; }
+        .sub-fechamento { color: var(--text-secondary); font-size: 0.9rem; }
+        .quick-btns-container { display: flex; gap: 8px; margin-bottom: 15px; }
+        .quick-btn { flex: 1; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg); border-radius: 12px; color: var(--text-primary); font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 1rem; }
+        .quick-btn:active { background: var(--gold-start); color: white; transform: scale(0.95); }
+        .category-scroll { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .cat-btn { white-space: nowrap; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--surface-solid); color: var(--text-secondary); font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .cat-btn:active { background: var(--info); color: white; border-color: var(--info); }
+        [data-theme="dark"] .quick-btn { background: #2a2a2a; border-color: #444; } [data-theme="dark"] .cat-btn { background: #2a2a2a; color: #ddd; border-color: #444; } [data-theme="dark"] .card.lucro { background: linear-gradient(145deg, #222, #1a1a1a); border: 1px solid #333; } [data-theme="dark"] .bottom-nav { background: rgba(30,30,30,0.95); box-shadow: 0 -5px 20px rgba(0,0,0,0.3); } [data-theme="dark"] .modal-box, [data-theme="dark"] .ajudante-container-fixa { background: #1f1f1f; border: 1px solid #333; } [data-theme="dark"] .btn-faq { background: #2a2a2a; border-color: #333; color: #ddd; } [data-theme="dark"] .toast { background: #222; color: #fff; } [data-theme="dark"] .nav-item { color: #555; } [data-theme="dark"] .nav-item.active { color: var(--gold-end); } [data-theme="dark"] .list-header { background: #111; color: #888; }
+        
+        #pro-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99900; background: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s, visibility 0.6s; }
+        #pro-loader.finish-loading { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loader-content { text-align: center; animation: float 3s ease-in-out infinite; }
+        .loader-logo { width: 180px; margin-bottom: 20px; filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4)); }
+        .loader-text { color: #d4af37; font-size: 1.5rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px; }
+        .loader-sub { color: #888; font-size: 0.9rem; margin-top: 10px; min-height: 20px; font-family: monospace; } 
+        .progress-bar-container { width: 200px; height: 4px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 20px; }
+        .progress-bar { width: 0%; height: 100%; background: var(--gold-gradient); box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); transition: width 2.5s ease-out; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 11000; width: 90%; max-width: 400px; pointer-events: none; }
+        .toast { background: var(--surface-solid); padding: 16px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideDown 0.4s; border-left: 5px solid #333; pointer-events: auto; }
+        .toast.success { border-left-color: var(--success); } .toast.error { border-left-color: var(--danger); } .toast.warning { border-left-color: #f39c12; }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        
+        header { background: var(--header-bg); backdrop-filter: blur(10px); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); height: 80px; }
+        .header-logo h1 { margin: 0; font-size: 1.2rem; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; display:flex; align-items:center; gap:8px;}
+        .header-logo img { width: auto; height: 55px; border-radius:5px; } 
+        .relogio-container { text-align: right; margin-right: 10px; }
+        .relogio-hora { font-weight: 800; font-size: 1rem; color: var(--text-primary); line-height: 1; }
+        .relogio-data { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-icon-header { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--surface-solid); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; }
+        .btn-ajuda { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--surface-solid); color: var(--gold-end); font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .tab-content { display: none; animation: fadeIn 0.4s; } .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        .card { background: var(--surface-solid); padding: 15px; border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-soft); border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; min-height: 100px; transition: transform 0.3s, box-shadow 0.3s; }
+        .card.full { grid-column: span 2; padding: 20px; }
+        .card.lucro { background: linear-gradient(145deg, #fff, #fffdf5); border: 1px solid rgba(212, 175, 55, 0.2); }
+        .card.entrada-box { background: var(--success-bg); border: 1px solid rgba(39, 174, 96, 0.2); } .card.entrada-box h3, .card.entrada-box .valor { color: var(--success); }
+        .card.saida-box { background: var(--danger-bg); border: 1px solid rgba(192, 57, 43, 0.2); } .card.saida-box h3, .card.saida-box .valor { color: var(--danger); }
+        .card h3 { margin: 0 0 5px; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .card .valor { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); } .card.lucro .valor { color: #b48811; font-size: 2rem; }
+        .segmented-control { display: flex; background: var(--input-bg); padding: 4px; border-radius: 14px; margin-bottom: 20px; }
+        .segment-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; cursor: pointer; border-radius: 10px; transition: 0.3s; }
+        .segment-btn.active { background: var(--surface-solid); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .form-container { background: var(--surface-solid); padding: 20px; border-radius: var(--radius-xl); box-shadow: var(--shadow-soft); margin-bottom: 25px; transition: transform 0.3s; }
+        input, select { width: 100%; padding: 15px; background: var(--input-bg); color: var(--text-primary); border: 2px solid transparent; border-radius: 12px; margin-bottom: 12px; font-family: inherit; font-size: 1rem; outline: none; transition: 0.3s; }
+        input:focus, select:focus { background: var(--surface-solid); border-color: var(--gold-start); }
+        label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; margin-left: 5px; text-transform: uppercase; }
+        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 14px; font-weight: 800; text-transform: uppercase; color: white; background: var(--gold-gradient); box-shadow: 0 8px 20px -5px rgba(180, 136, 17, 0.4); cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-dark { background: #2d3436; box-shadow: 0 8px 20px -5px rgba(0,0,0,0.3); display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+        .list-header { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; color: var(--text-secondary); margin: 20px 0 10px 0; letter-spacing: 1px; padding-left: 5px; }
+        .item { display: flex; justify-content: space-between; align-items: center; background: var(--surface-solid); padding: 15px; border-radius: 16px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .item-icon { width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 1.1rem; }
+        .data-destaque { font-weight: 800; color: var(--gold-end); font-size: 0.85rem; margin-top: 2px; display: block; letter-spacing: 0.5px; }
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 350px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); height: 75px; border-radius: 35px; display: flex; justify-content: space-evenly; align-items: center; box-shadow: 0 15px 40px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item { border: none; background: none; color: #ccc; display: flex; flex-direction: column; align-items: center; width: 60px; transition: 0.3s; }
+        .nav-item.active { color: var(--gold-end); transform: translateY(-5px); }
+        .nav-icon { font-size: 1.3rem; } .nav-label { font-size: 0.6rem; font-weight: 700; margin-top: 2px; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); z-index: 9000; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: var(--surface-solid); padding: 25px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; animation: zoomIn 0.3s; max-height: 80vh; overflow-y: auto; color: var(--text-primary); }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        #tutorial-overlay { align-items: flex-end; justify-content: center; padding-bottom: 0; }
+        .ajudante-container-fixa { background: var(--surface-solid); width: 100%; max-width: 500px; border-top-left-radius: 30px; border-top-right-radius: 30px; padding: 20px; position: relative; text-align: center; box-shadow: 0 -10px 40px rgba(0,0,0,0.3); animation: slideUpTuto 0.4s ease-out; color: var(--text-primary); }
+        #img-bot { font-size: 3.5rem; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); z-index: 10005; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)); pointer-events: none; background: var(--surface-solid); border-radius: 50%; padding: 5px; border: 2px solid var(--gold-end); }
+        .balao-menu { max-height: 50vh; overflow-y: auto; text-align: left; padding-top: 10px; }
+        .tutorial-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .btn-faq { background: var(--input-bg); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 12px; text-align: left; font-weight: 600; color: var(--text-primary); cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .btn-faq:active { background: var(--gold-gradient); color: white; border-color: transparent; }
+        .btn-faq::after { content: '👉'; font-size: 0.9rem; }
+        .destaque-tutorial { position: relative; z-index: 10001; box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--gold-start), 0 0 100px rgba(0,0,0,0.8) !important; transform: scale(1.02); transition: 0.3s; background: var(--surface-solid) !important; }
+        @keyframes slideUpTuto { from { transform: translateY(100%); } to { transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <div id="tela-login">
+        <div class="login-box">
+            <img src="logo.png" style="width:250px; max-width:80%; margin-bottom:30px;">
+            <h2 style="color:#d4af37; margin:0 0 10px 0;">Área do Cliente</h2>
+            <p style="color:#888; font-size:0.9rem; margin-bottom:20px;">Insira sua chave de acesso para liberar o sistema.</p>
+            
+            <input type="text" id="input-licenca" class="login-input" placeholder="Digite seu E-mail ou Código">
+            <button onclick="validarAcesso()" class="login-btn">LIBERAR ACESSO</button>
+            
+            <p id="msg-erro" style="color:#e74c3c; margin-top:15px; font-size:0.9rem; display:none; background:rgba(231, 76, 60, 0.1); padding:10px; border-radius:8px;">❌ Acesso Negado. Chave inválida.</p>
+        </div>
+    </div>
+    <div id="overlay-fechamento">
+        <div class="spinner-biblia"></div>
+        <div class="texto-fechamento">Encerrando o dia...</div>
+        <div class="sub-fechamento">Organizando banco de dados</div>
+    </div>
+
+    <div id="notificacao-fixa">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.5rem;">📅</span>
+            <div>
+                <strong>Contas Vencendo Hoje!</strong>
+                <small>Toque em "Pessoal" para pagar.</small>
+            </div>
+        </div>
+        <button onclick="notificacaoFechada=true; document.getElementById('notificacao-fixa').style.display='none'" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+
+    <div id="toast-container"></div>
+    
+    <div id="pro-loader">
+        <div class="loader-content">
+            <img src="logo.png" class="loader-logo" alt="Logo">
+            <div id="loader-phrase" class="loader-sub">Inicializando Sistema...</div>
+            <div class="progress-bar-container"><div class="progress-bar" id="loader-bar"></div></div>
+        </div>
+    </div>
+
+    <div id="modal-calendario" class="modal-overlay">
+        <div class="modal-box">
+            <h3>📅 Iniciar Caixa</h3>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">Selecione a data de trabalho:</p>
+            <input type="date" id="data-verificacao" style="text-align:center;">
+            <button class="btn-main" onclick="confirmarDataInicial()">Confirmar</button>
+        </div>
+    </div>
+
+    <div id="modal-detalhes" class="modal-overlay">
+        <div class="modal-box" style="text-align:left;">
+            <h3 id="titulo-detalhes" style="color:var(--gold-end); border-bottom:1px solid #eee; padding-bottom:10px;">Detalhes</h3>
+            <div id="conteudo-detalhes" style="margin-top:15px;"></div>
+            <button onclick="document.getElementById('modal-detalhes').style.display='none'" style="width:100%; padding:15px; margin-top:20px; background:#333; color:white; border:none; border-radius:12px;">Fechar</button>
+        </div>
+    </div>
+
+    <div id="modal-conta" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="color:var(--info);">Nova Conta Fixa</h3>
+            <div style="text-align:left;">
+                <label>Nome</label><input type="text" id="nova-conta-nome">
+                <label>Valor (R$)</label><input type="number" id="nova-conta-valor">
+                <label>Vencimento (Dia)</label><input type="date" id="nova-conta-data">
+            </div>
+            <button class="btn-main" style="background:var(--info);" onclick="salvarContaModal()">Salvar</button>
+            <button onclick="fecharModalConta()" style="margin-top:15px; border:none; background:none; color:var(--text-secondary);">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="tutorial-overlay" class="modal-overlay" style="background:rgba(0,0,0,0.8); display:none; align-items: flex-end;">
+        <div class="ajudante-container-fixa">
+            <div id="img-bot">🤖</div>
+            <div class="balao-menu">
+                <div id="tutorial-menu">
+                    <h3 style="margin:0 0 5px 0; color:var(--text-primary);">FluxBot 🤖</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:15px;">Selecione um tópico para análise:</p>
+                    <div class="tutorial-list" id="faq-list"></div>
+                    <button onclick="fecharTutorial()" style="width:100%; padding:12px; margin-top:15px; background:var(--input-bg); border:none; border-radius:12px; color:var(--text-secondary);">Fechar Ajuda</button>
+                </div>
+                <div id="tutorial-resposta" style="display:none;">
+                    <h4 id="faq-titulo" style="margin:0 0 10px 0; color:var(--gold-end);">...</h4>
+                    <p id="faq-texto" style="font-size:0.95rem; color:var(--text-primary); line-height:1.6;">...</p>
+                    <button class="btn-main" onclick="voltarMenu()" style="padding:12px; margin-top:20px;">Retornar ao Menu</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-logo">
+            <h1><img src="logo.png" alt="Logo"></h1>
+        </div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div class="relogio-container">
+                <div class="relogio-hora" id="relogio-hora">00:00:00</div>
+                <div class="relogio-data" id="relogio-data">--/--</div>
+            </div>
+            <button class="btn-icon-header" onclick="alternarTheme()" id="btn-theme-header">🌙</button>
+            <button class="btn-icon-header" onclick="alternarPrivacidade()" id="btn-privacy">👁️</button>
+            <button class="btn-ajuda" onclick="abrirTutorial()">?</button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div id="tab-salao" class="tab-content active">
+            
+            <button class="btn-main btn-dark" id="btn-concluir-dia" onclick="concluirDia()">
+                <span>✅</span> FECHAR O DIA (Check-in)
+            </button>
+            
+            <div class="segmented-control" id="area-visao">
+                <button class="segment-btn active" id="seg-hoje" onclick="mudarVisao('hoje')">Ver Hoje</button>
+                <button class="segment-btn" id="seg-mes" onclick="mudarVisao('mes')">Ver Mês</button>
+            </div>
+
+            <div class="dashboard" id="area-dashboard">
+                <div class="card full lucro">
+                    <h3 id="titulo-lucro">Lucro Líquido (Hoje)</h3>
+                    <div class="valor" id="saldoSalao">R$ 0,00</div>
+                </div>
+                
+                <div class="card entrada-box">
+                    <h3>Entradas Totais</h3>
+                    <div class="valor" id="totalServicos">R$ 0,00</div>
+                </div>
+
+                <div class="card saida-box" id="card-saida">
+                    <h3>Saídas (Despesas)</h3>
+                    <div class="valor" id="saidasSalao">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="form-container" id="area-lancamento">
+                <h4 style="margin:0 0 15px 0;">Novo Lançamento</h4>
+
+                <div class="quick-btns-container">
+                    <button class="quick-btn" onclick="setValor(20)">20</button>
+                    <button class="quick-btn" onclick="setValor(50)">50</button>
+                    <button class="quick-btn" onclick="setValor(100)">100</button>
+                </div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div><label>Data</label><input type="date" id="dataSalao"></div>
+                    <div><label>Valor</label><input type="number" id="valorSalao" inputmode="decimal" placeholder="0.00"></div>
+                </div>
+                
+                <label>Tipo</label>
+                <select id="tipoSalao" onchange="verificarTipo()">
+                    <option value="entrada_servico">💰 Entrada / Receita</option>
+                    <option value="entrada_total">🏦 Fechamento/Aporte</option>
+                    <option value="saida">💸 Despesa/Saída</option>
+                </select>
+
+                <div id="container-desc">
+                    <label>Descrição</label>
+                    <input type="text" id="descSalao" placeholder="Ex: Venda, Serviço ou Material">
+                </div>
+                
+                <button class="btn-main" onclick="adicionar('salao')">Lançar</button>
+            </div>
+
+            <div id="listaSalao"></div>
+            <button id="btn-fechar-mes" onclick="fecharMes()" style="width:100%; padding:15px; border:2px solid var(--danger); background:none; color:var(--danger); font-weight:bold; border-radius:14px; margin-top:30px;">🔒 FECHAR E ARQUIVAR MÊS</button>
+        </div>
+
+        <div id="tab-historico" class="tab-content">
+            <div style="background:var(--surface-solid); padding:20px; border-radius:16px; margin-bottom:20px; text-align:center; border:1px solid var(--border-color); box-shadow:var(--shadow-soft);">
+                <h4 style="margin-top:0; color:var(--text-secondary);">Segurança dos Dados</h4>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-main" onclick="fazerBackup()" style="background:var(--info); flex:1; box-shadow:none;">☁️ Salvar Backup</button>
+                    <button class="btn-main" onclick="triggerRestore()" style="background:#333; flex:1; box-shadow:none;">📥 Restaurar</button>
+                </div>
+                <input type="file" id="input-restore" style="display:none;" onchange="restaurarDados(this)" accept=".json">
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0; margin-top:10px;">Salve o arquivo em um local seguro.</p>
+            </div>
+
+            <h3 style="text-align:center;">Relatórios Fechados</h3>
+            <div id="lista-meses-fechados"></div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="mudarAba('salao')" id="nav-salao"><span class="nav-icon">📊</span><span class="nav-label">Caixa</span></button>
+        <button class="nav-item" onclick="mudarAba('historico')" id="nav-historico"><span class="nav-icon">📂</span><span class="nav-label">Histórico</span></button>
+    </nav>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('Erro SW:', err));
+            });
+        }
+    </script>
+
+    <script>
+        // --- SEGURANÇA: CONTROLE DE ACESSO ---
+        
+        // ⚠️ COLOQUE SEU LINK DO GITHUB AQUI (Substitua a URL abaixo)
+        const URL_CLIENTES = 'https://raw.githubusercontent.com/SEU-USUARIO/SEU-REPOSITORIO/main/clientes.json'; 
+
+        async function validarAcesso() {
+            const btn = document.querySelector('.login-btn');
+            const input = document.getElementById('input-licenca');
+            const msg = document.getElementById('msg-erro');
+            const chaveDigitada = input.value.trim().toLowerCase();
+
+            if(!chaveDigitada) return;
+
+            // Animação de carregamento
+            btn.innerText = "VERIFICANDO...";
+            btn.style.opacity = "0.7";
+            msg.style.display = 'none';
+
+            try {
+                // --- MODO REAL (PRODUÇÃO) ---
+                // Vai buscar a lista no seu GitHub
+                const resposta = await fetch(URL_CLIENTES + '?t=' + Date.now()); // Date.now evita cache antigo
+                
+                if(!resposta.ok) {
+                    throw new Error("Erro ao conectar no servidor");
+                }
+
+                const listaClientes = await resposta.json();
+
+                if(listaClientes.includes(chaveDigitada)) {
+                    // SUCESSO!
+                    localStorage.setItem('flux_licenca_ativa', chaveDigitada);
+                    document.getElementById('tela-login').style.display = 'none';
+                    if(typeof gtag !== 'undefined') gtag('event', 'login', { 'user_id': chaveDigitada });
+                } else {
+                    // ERRO
+                    throw new Error("Chave inválida");
+                }
+
+            } catch (error) {
+                console.log(error);
+                msg.style.display = 'block';
+                btn.innerText = "LIBERAR ACESSO";
+                btn.style.opacity = "1";
+                if(navigator.vibrate) navigator.vibrate(200);
+            }
+        }
+
+        // Verifica se já está logado ao abrir (Evita pedir senha toda vez)
+        window.addEventListener('load', () => {
+            const licencaSalva = localStorage.getItem('flux_licenca_ativa');
+            if(licencaSalva) {
+                document.getElementById('tela-login').style.display = 'none';
+            }
+        });
+
+        // --- SISTEMA FINANCEIRO ---
+        let transacoes = JSON.parse(localStorage.getItem('sys_financas_basic_v2')) || [];
+        let historicoFechado = JSON.parse(localStorage.getItem('sys_historico_basic_v2')) || [];
+        let visaoAtual = 'hoje';
+
+        const frasesFluxBot = ["Sistema Essencial...", "Carregando Caixa...", "Pronto para operação."];
+        const duvidas = [
+            { t: "Lançamento Rápido", r: "Use os botões de atalho para lançar valores comuns instantaneamente.", el: "area-lancamento" },
+            { t: "Modo Privacidade", r: "Toque no ícone de 'Olho' no topo para ofuscar os valores na tela.", el: "btn-privacy" },
+            { t: "Registrar Entrada", r: "Na aba Caixa, insira o valor, selecione 'Entrada' e confirme o lançamento.", el: "area-lancamento" },
+            { t: "Registrar Despesas", r: "Lance como 'Despesa/Saída' no Caixa para custos do negócio.", el: "card-saida" },
+            { t: "Fechar o Dia", r: "Ao finalizar o expediente, clique em 'FECHAR O DIA' para processar o relatório diário.", el: "btn-concluir-dia" },
+            { t: "Visão Mensal", r: "Alterne entre 'Ver Hoje' e 'Ver Mês' para mudar o escopo dos dados.", el: "area-visao" }
+        ];
+
+        function abrirTutorial() { document.getElementById('tutorial-overlay').style.display = 'flex'; document.getElementById('tutorial-menu').style.display = 'block'; document.getElementById('tutorial-resposta').style.display = 'none'; const lista = document.getElementById('faq-list'); lista.innerHTML = ''; duvidas.forEach((d, index) => { lista.innerHTML += `<div class="btn-faq" onclick="verResposta(${index})">${d.t}</div>`; }); }
+        function verResposta(index) { const d = duvidas[index]; document.getElementById('tutorial-menu').style.display = 'none'; document.getElementById('tutorial-resposta').style.display = 'block'; document.getElementById('faq-titulo').innerText = d.t; document.getElementById('faq-texto').innerText = d.r; if(d.aba) mudarAba(d.aba); setTimeout(() => { if(d.el) { const el = document.getElementById(d.el); if(el) { el.classList.add('destaque-tutorial'); el.scrollIntoView({behavior: "smooth", block: "center"}); } } }, 300); }
+        function voltarMenu() { document.getElementById('tutorial-menu').style.display = 'block'; document.getElementById('tutorial-resposta').style.display = 'none'; document.querySelectorAll('.destaque-tutorial').forEach(el => el.classList.remove('destaque-tutorial')); }
+        function fecharTutorial() { document.getElementById('tutorial-overlay').style.display = 'none'; voltarMenu(); }
+        function setValor(val) { document.getElementById('valorSalao').value = val; }
+        function alternarPrivacidade() { document.body.classList.toggle('privacy-active'); const btn = document.getElementById('btn-privacy'); btn.innerText = document.body.classList.contains('privacy-active') ? '🔒' : '👁️'; }
+        function atualizarRelogio() { const agora = new Date(); document.getElementById('relogio-hora').textContent = `${String(agora.getHours()).padStart(2, '0')}:${String(agora.getMinutes()).padStart(2, '0')}:${String(agora.getSeconds()).padStart(2, '0')}`; document.getElementById('relogio-data').textContent = `${String(agora.getDate()).padStart(2, '0')}/${String(agora.getMonth() + 1).padStart(2, '0')}`; }
+        function carregarTema() { if (localStorage.getItem('sys_tema') === 'dark') { document.body.setAttribute('data-theme', 'dark'); document.getElementById('btn-theme-header').textContent = '☀️'; } }
+        function alternarTheme() { if (document.body.getAttribute('data-theme') === 'dark') { document.body.removeAttribute('data-theme'); document.getElementById('btn-theme-header').textContent = '🌙'; localStorage.setItem('sys_tema', 'light'); } else { document.body.setAttribute('data-theme', 'dark'); document.getElementById('btn-theme-header').textContent = '☀️'; localStorage.setItem('sys_tema', 'dark'); } }
+        
+        window.onload = function() {
+            const fraseRand = frasesFluxBot[Math.floor(Math.random() * frasesFluxBot.length)];
+            document.getElementById('loader-phrase').innerText = fraseRand;
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('data-verificacao').value = hoje;
+            document.getElementById('dataSalao').value = hoje;
+            setInterval(atualizarRelogio, 1000); atualizarRelogio(); carregarTema();
+            setTimeout(() => { document.getElementById('loader-bar').style.width = '100%'; }, 100);
+            setTimeout(() => { document.getElementById('pro-loader').classList.add('finish-loading'); confirmarDataInicial(); }, 2000);
+        };
+
+        function confirmarDataInicial() {
+            const data = document.getElementById('data-verificacao').value;
+            if(!data) return;
+            document.getElementById('dataSalao').value = data;
+            document.getElementById('modal-calendario').style.display = 'none';
+            atualizarTela();
+        }
+
+        function mudarAba(aba) { document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active')); document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active')); document.getElementById('tab-' + aba).classList.add('active'); document.getElementById('nav-' + aba).classList.add('active'); window.scrollTo({top:0, behavior:'smooth'}); if(aba==='historico') renderizarHistorico(); }
+        function mudarVisao(tipo) { visaoAtual = tipo; document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active')); if(tipo === 'hoje') { document.getElementById('seg-hoje').classList.add('active'); document.getElementById('titulo-lucro').innerText = 'Lucro Líquido (Hoje)'; } else { document.getElementById('seg-mes').classList.add('active'); document.getElementById('titulo-lucro').innerText = 'Lucro Líquido (Mês)'; } atualizarTela(); }
+        
+        function verificarTipo() {
+            const tipo = document.getElementById('tipoSalao').value;
+            const containerDesc = document.getElementById('container-desc');
+            const descInput = document.getElementById('descSalao');
+            if (tipo === 'entrada_total') { containerDesc.style.display = 'none'; descInput.value = `💰 FECHAMENTO DE CAIXA`; } else { containerDesc.style.display = 'block'; descInput.value = ''; }
+        }
+
+        function adicionar(origem) {
+            let desc = document.getElementById('descSalao').value;
+            let valor = parseFloat(document.getElementById('valorSalao').value);
+            let tipo = document.getElementById('tipoSalao').value;
+            let data = document.getElementById('dataSalao').value;
+            if (tipo === 'entrada_total' && !desc) desc = `💰 FECHAMENTO DE CAIXA`;
+            if (!desc || isNaN(valor) || !data) { showToast('Preencha os campos!', 'error'); return; }
+            transacoes.unshift({ id: Date.now(), desc, valor, categoria: origem, tipo, status: 'pago', dataDisplay: data.split('-').reverse().join('/'), dataISO: data });
+            localStorage.setItem('sys_financas_basic_v2', JSON.stringify(transacoes));
+            atualizarTela(); showToast('Registro Salvo!', 'success');
+            document.getElementById('valorSalao').value = ''; if(tipo !== 'entrada_total') document.getElementById('descSalao').value = '';
+        }
+
+        function formatarDataHeader(isoDate) {
+            const hoje = new Date().toISOString().split('T')[0];
+            const d = new Date(isoDate);
+            const ontem = new Date(); ontem.setDate(ontem.getDate() - 1);
+            const ontemISO = ontem.toISOString().split('T')[0];
+            if(isoDate === hoje) return "Hoje"; if(isoDate === ontemISO) return "Ontem";
+            return d.toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: '2-digit' });
+        }
+
+        function atualizarTela() {
+            const listaSalao = document.getElementById('listaSalao'); listaSalao.innerHTML = '';
+            let sServicos=0, sTotal=0, sSaida=0;
+            const hojeISO = document.getElementById('dataSalao').value;
+            transacoes.sort((a, b) => b.id - a.id); 
+            let ultimoHeaderSalao = "";
+            transacoes.forEach(t => {
+                let mostrar = true;
+                if (visaoAtual === 'hoje' && t.dataISO !== hojeISO) mostrar = false;
+                if (mostrar || visaoAtual === 'mes') {
+                    let deveSomar = (visaoAtual === 'hoje') ? (t.dataISO === hojeISO) : true;
+                    if(deveSomar) {
+                        if(t.tipo === 'entrada_servico') sServicos += t.valor; else if(t.tipo === 'entrada_total') sTotal += t.valor; else sSaida += t.valor;
+                    }
+                }
+                if (!mostrar) return;
+                if (t.dataISO !== ultimoHeaderSalao) {
+                    const divHeader = document.createElement('div'); divHeader.className = 'list-header'; divHeader.innerText = formatarDataHeader(t.dataISO); listaSalao.appendChild(divHeader); ultimoHeaderSalao = t.dataISO;
+                }
+                const el = document.createElement('div'); el.className = 'item';
+                let icone = '💰'; let bgIcon = 'var(--success-bg)'; let corTextoValor = 'var(--success)'; let sinal = '+';
+                if(t.tipo === 'entrada_total') { icone='🏦'; bgIcon='var(--info-bg)'; corTextoValor='var(--info)'; }
+                if(t.tipo === 'saida') { icone='💸'; sinal='-'; bgIcon='var(--danger-bg)'; corTextoValor='var(--danger)'; }
+                let htmlDesc = `<span style="font-size:0.9rem;">${t.desc}</span>`;
+                if(t.tipo === 'entrada_total') htmlDesc = `<span style="font-weight:bold; color:var(--info);">FECHAMENTO</span>`;
+                el.innerHTML = `<div class="item-valor" style="display:flex; align-items:center; flex:1;"><div class="item-icon" style="background:${bgIcon}">${icone}</div><div>${htmlDesc}</div></div><div style="text-align:right;"><div class="valor" style="font-weight:bold; margin-right:10px; color:${corTextoValor};">${sinal} R$ ${t.valor.toFixed(2)}</div></div><button onclick="remover(${t.id})" style="background:none; border:none; color:var(--text-secondary); font-size:1.2rem;">&times;</button>`;
+                listaSalao.appendChild(el);
+            });
+            let servicosExibicao = sServicos + sTotal;
+            document.getElementById('totalServicos').innerText = `R$ ${servicosExibicao.toFixed(2)}`;
+            document.getElementById('saidasSalao').innerText = `R$ ${sSaida.toFixed(2)}`;
+            let lucroReal = (sServicos + sTotal) - sSaida;
+            document.getElementById('saldoSalao').innerText = `R$ ${lucroReal.toFixed(2)}`;
+        }
+
+        function remover(id) { if(confirm('Apagar registro?')) { transacoes = transacoes.filter(t => t.id !== id); localStorage.setItem('sys_financas_basic_v2', JSON.stringify(transacoes)); atualizarTela(); } }
+        function concluirDia() {
+            const hoje = document.getElementById('dataSalao').value;
+            if(confirm(`Encerrar movimentações do dia?`)) {
+                const overlay = document.getElementById('overlay-fechamento'); overlay.style.display = 'flex';
+                setTimeout(() => { const d = new Date(hoje); d.setDate(d.getDate() + 1); const amanha = d.toISOString().split('T')[0]; document.getElementById('dataSalao').value = amanha; mudarVisao('hoje'); showToast('Dia Encerrado.', 'success'); overlay.style.display = 'none'; }, 3000);
+            }
+        }
+        function fecharMes() {
+            if(!confirm("⚠️ ATENÇÃO: Deseja fechar o mês e arquivar?")) return;
+            const nome = prompt("Nome do Mês (Ex: Março):");
+            if(!nome) return;
+            let totais = { serv:0, total:0, saida:0 };
+            transacoes.forEach(t => { if(t.tipo==='entrada_servico') totais.serv+=t.valor; else if(t.tipo==='entrada_total') totais.total+=t.valor; else totais.saida+=t.valor; });
+            let lucroLiquido = (totais.serv + totais.total) - totais.saida;
+            historicoFechado.unshift({ id: Date.now(), nome, data: new Date().toLocaleDateString(), totais: {...totais, lucro: lucroLiquido}, detalhes: [] });
+            localStorage.setItem('sys_historico_basic_v2', JSON.stringify(historicoFechado));
+            transacoes = []; localStorage.setItem('sys_financas_basic_v2', JSON.stringify(transacoes));
+            atualizarTela(); renderizarHistorico(); showToast('Mês Arquivado!', 'success');
+        }
+        function renderizarHistorico() {
+            const div = document.getElementById('lista-meses-fechados'); div.innerHTML='';
+            historicoFechado.forEach(h => {
+                div.innerHTML += `<div class="item" style="display:block;"><div style="display:flex; justify-content:space-between; margin-bottom:10px;"><div><strong>${h.nome}</strong><br><small style="color:var(--text-secondary);">${h.data}</small></div><div class="valor" style="font-weight:bold; font-size:1.2rem; color:var(--success);">R$ ${h.totais.lucro.toFixed(2)}</div></div><div style="display:flex; gap:10px; margin-top:10px;"><button onclick='verDetalhes(${JSON.stringify(h)})' style="flex:1; background:var(--input-bg); color:var(--text-primary); border:none; padding:10px; border-radius:10px;">📄 Ver Detalhes</button><button onclick="if(confirm('Apagar?')) { historicoFechado=historicoFechado.filter(x=>x.id!==${h.id}); localStorage.setItem('sys_historico_basic_v2', JSON.stringify(historicoFechado)); renderizarHistorico(); }" style="background:var(--danger-bg); color:var(--danger); border:none; padding:10px 15px; border-radius:10px;">🗑️</button></div></div>`;
+            });
+        }
+        function verDetalhes(hist) {
+            const container = document.getElementById('conteudo-detalhes'); document.getElementById('titulo-detalhes').innerText = "Resumo: " + hist.nome; container.innerHTML = '';
+            let servTotal = hist.totais.serv + hist.totais.total;
+            container.innerHTML += `<div style="margin-bottom:20px; background:var(--input-bg); padding:15px; border-radius:16px; border:1px solid var(--border-color);"><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--text-secondary);">Receita Bruta:</span> <strong>R$ ${servTotal.toFixed(2)}</strong></div><div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--danger);">(-) Despesas Caixa:</span> <span style="color:var(--danger); font-weight:bold;">- R$ ${hist.totais.saida.toFixed(2)}</span></div><hr style="border:0; border-top:2px dashed #ddd; margin:10px 0;"><div style="display:flex; justify-content:space-between; font-size:1.1rem;"><span style="font-weight:800;">LUCRO FINAL:</span> <span style="color:var(--success); font-weight:800;">R$ ${hist.totais.lucro.toFixed(2)}</span></div></div>`;
+            document.getElementById('modal-detalhes').style.display = 'flex';
+        }
+        function showToast(msg, tipo) { const t = document.createElement('div'); t.className=`toast ${tipo}`; t.innerHTML=`<span>${tipo==='success'?'✅':'⚠️'}</span><span>${msg}</span>`; document.getElementById('toast-container').appendChild(t); setTimeout(()=>t.remove(), 3000); if(navigator.vibrate) navigator.vibrate(50); }
+        function fazerBackup() { localStorage.setItem('sys_ultimo_backup', Date.now()); const dadosBackup = { transacoes: transacoes, historico: historicoFechado, versao: 'Essencial 2.0', dataBackup: new Date().toLocaleDateString() }; const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosBackup)); const downloadAnchorNode = document.createElement('a'); downloadAnchorNode.setAttribute("href", dataStr); downloadAnchorNode.setAttribute("download", "Backup_Essencial_" + new Date().toISOString().split('T')[0] + ".json"); document.body.appendChild(downloadAnchorNode); downloadAnchorNode.click(); downloadAnchorNode.remove(); showToast('Backup Baixado!', 'success'); }
+        function triggerRestore() { document.getElementById('input-restore').click(); }
+        function restaurarDados(input) { const file = input.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = function(e) { try { const dados = JSON.parse(e.target.result); if (dados.transacoes && dados.historico) { if(confirm('⚠️ Substituir dados atuais?')) { localStorage.setItem('sys_financas_basic_v2', JSON.stringify(dados.transacoes)); localStorage.setItem('sys_historico_basic_v2', JSON.stringify(dados.historico)); localStorage.setItem('sys_ultimo_backup', Date.now()); alert('✅ Restaurado!'); location.reload(); } } else { alert('❌ Arquivo inválido.'); } } catch (err) { alert('❌ Erro.'); } }; reader.readAsText(file); }
+    </script>
+</body>
+</html>
